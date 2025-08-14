@@ -47,17 +47,15 @@ public class UsersService {
 	//新規作成
 	public Users createUser(String userName, String rawPassword) {//saveの返り値はUser
 		//パスワードをハッシュ化
-		System.out.println("ハッシュ化する");
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 		
 		Users newUser = new Users();//インスタンス作成
 		newUser.setUserName(userName);
 		newUser.setPasswordHash(encodedPassword);
-		newUser.setDeleted(false);//→本当に必須ですか？ 省略可能？
+		newUser.setDeleted(false);
 		
-		System.out.println("設定した");
 		
-		// ★ 管理者が1人もいなければROLE_ADMIN、それ以外はROLE_USER
+		// 管理者が1人もいなければROLE_ADMIN、それ以外はROLE_USER
 	    String role = usersRepository.countByUserRole("ADMIN") == 0 ? "ADMIN" : "USER";
 	    newUser.setUserRole(role);
 		
@@ -95,10 +93,8 @@ public class UsersService {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("指定されたユーザーが見つかりません: " + userId));
 
-        // パスワードのハッシュ化（Spring SecurityのPasswordEncoderなどを使用することを強く推奨）
-        // 例: String hashedPassword = passwordEncoder.encode(newPassword);
-        // ここでは簡易的にプレーンテキストを保持していますが、本番環境では絶対に行わないでください。
-        user.setPasswordHash(newPassword); // ★ ここでBCryptPasswordEncoderなどでハッシュ化する ★
+        String encodedPassword = passwordEncoder.encode(newPassword);//ハッシュ化する
+        user.setPasswordHash(encodedPassword); 
 
         usersRepository.save(user);
     }
@@ -116,17 +112,5 @@ public class UsersService {
                 .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません: " + username));
     }
 	
-
-	
-	/*//削除→多分これだとDBからガチで消すことになる（物理削除）
-	//削除フラグを立てればいいだけじゃん（論理削除）
-	public boolean deleteUser(Integer id) {
-		if(usersRepository.existsById(id)) {
-			usersRepository.deleteById(id);
-			return true;
-		}else {
-			return false;
-		}	
-	}*/
 
 }

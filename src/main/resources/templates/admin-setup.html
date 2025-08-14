@@ -4,12 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理者ユーザーのパスワード設定</title>
-  <!--<style>
-    body {font-family: sans-serif; padding: 20px;}
-    label {display: block; margin-top: 10px;}
-    input {width: 100%; padding: 8px;margin-top: 5px;    }
-    #error {color: red;margin-top: 10px;}
-  </style>-->
+
   <style>
   /* ===== Theme tokens ===== */
   :root{
@@ -102,7 +97,7 @@
 	  font-size: 16px;
 	  border-radius: 12px;
 	  border: 1px solid var(--line);
-	  box-sizing: border-box; /* ← これが重要 */
+	  box-sizing: border-box; 
 	}
   input[readonly]{
     background: #f9fafb;
@@ -140,38 +135,8 @@
     box-shadow: none;
   }
 
-  /* ===== Error ===== */
-  #error{
-    margin-top: 12px;
-    padding: 10px 12px;
-    border: 1px solid #fecaca;
-    background: #fff1f2;
-    color: #b91c1c;
-    border-radius: 10px;
-    font-size: 14px;
-    display: none;
-  }
-  #error.show{ display: block; }
 
-  /* ===== Small screens ===== */
-  @media (max-width: 480px){
-    form#password-form{ padding: 18px; border-radius: 14px; }
-    header{ margin: 20px auto 8px; }
-  }
 
-  /* ===== Dark mode (optional) ===== */
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#0b1020;
-      --panel:#0f162a;
-      --ink:#e5e7eb;
-      --sub:#9ca3af;
-      --line:#1f2937;
-      --shadow: 0 12px 30px rgba(0,0,0,.5);
-    }
-    input[readonly]{ background:#0b1222; }
-    button[type="submit"]{ box-shadow: 0 10px 24px rgba(37,99,235,.35); }
-  }
 </style>
 
 </head>

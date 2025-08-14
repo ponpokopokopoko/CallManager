@@ -7,7 +7,7 @@
 	
 	<title>ユーザー選択</title>
 	<style>
-		/* ===== Reset & tokens ===== */
+		/* ===== Reset===== */
 		*,
 		*::before,
 		*::after { box-sizing: border-box; }
@@ -105,7 +105,7 @@
 		  transition: border-color .2s, box-shadow .2s, transform .02s;
 		}
 		
-		/* readonly風にしたい時の色（今回はselectの初期行用） */
+		
 		section#login select:invalid { color: #9ca3af; }
 		
 		/* Custom select arrow */
@@ -162,25 +162,6 @@
 		  display: none; /* JSで出すときに block に */
 		}
 		
-		/* Small screens */
-		@media (max-width: 480px){
-		  section#login form{ padding: 18px; border-radius: 14px; }
-		  header{ margin: 20px auto 8px; }
-		}
-		
-		/* Dark mode */
-		@media (prefers-color-scheme: dark){
-		  :root{
-		    --bg:#0b1020;
-		    --panel:#0f162a;
-		    --ink:#e5e7eb;
-		    --sub:#9ca3af;
-		    --line:#1f2937;
-		    --shadow: 0 12px 30px rgba(0,0,0,.5);
-		  }
-		  section#login select:invalid { color:#94a3b8; }
-		}
-
 	</style>
 	
 </head>
@@ -224,9 +205,6 @@
 	</main>
 	
 	<script>
-		//やること
-		//１，画面が組まれたら→ユーザーの一覧取得、パスワード、ログインボタンのイベントリスナー付ける
-		//２，ログイン（バリデーションも）
 		
 		//引数なしの場合のアロー関数
 		document.addEventListener('DOMContentLoaded', async () => {
@@ -240,11 +218,7 @@
 					console.log('kokode');
 		            // サーバーからユーザー一覧を取得（GET /users を想定）
 		            const response = await fetch('/api/users');//一覧取得getUsers()→成功
-		            
-		            //const text = await response.text();  // まずは text() で内容を確認
-					//console.log('サーバーの返り値:', text);
-					
-					//const accounts = JSON.parse(text);
+		
 		
 		            if (!response.ok) { // レスポンスのステータスコードが200番台（成功）以外の場合
 		            	console.log('kokode!');
@@ -274,7 +248,7 @@
 		        }
 		    }
 		
-		    // ページ読み込み時にユーザーリストをロード→なにこれ必要？
+		    // ページ読み込み時にユーザーリストをロード
 		    loadUsersIntoSelect();
 		    
 		    //２，ログイン→ボタンでやっちゃう（エラー出しだけ）

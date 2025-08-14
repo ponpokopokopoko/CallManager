@@ -10,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+//ADMIN権限を持ったユーザーの有無で遷移先を分岐するロジック
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
@@ -22,12 +23,10 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             .anyMatch(role -> role.equals("ROLE_ADMIN"));
 
         if (isAdmin) {
-        	System.out.println("ADMIN");
-            response.sendRedirect("/admin-menu");///admin-menu　基本はsendRedirectを使う。nullは他を痛がった方がいい
+            response.sendRedirect("/admin-menu");
             //request.getRequestDispatcher("/general-menu").forward(request, response);
 
         } else {
-        	System.out.println("USER");
             response.sendRedirect("/general-menu");
         }
     }

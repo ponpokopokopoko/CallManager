@@ -51,7 +51,7 @@ public class UsersController {
 		@DeleteMapping("/{id}")
 		//削除（DELETE/users/{id}）	//＜Void＞とは？→レスポンスボディでは何も返さない
 		//ResponseEntity<T> の <T> の部分には、
-		//HTTPレスポンスのボディとしてクライアントに返したいオブジェクトの型を指定します。
+		//HTTPレスポンスのボディとしてクライアントに返したいオブジェクトの型を指定
 		public ResponseEntity<String> deleteUsers(@PathVariable Integer id){
 			
 			//管理者ユーザーか確認
@@ -71,7 +71,6 @@ public class UsersController {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);//ジェネリクスが空→推論できる場合は<>ダイアモンド演算子でいい
 			}else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-				//（）内で選んでんのなに→new でコンストラクタを呼んでる
 				//第一引数：Bodyの中身、第二引数：HTTPステータスコード
 			}	
 		}

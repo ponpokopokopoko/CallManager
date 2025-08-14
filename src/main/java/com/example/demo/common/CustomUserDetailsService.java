@@ -12,12 +12,12 @@ import com.example.demo.user.Users;
 import com.example.demo.user.UsersRepository;
 
 
-//UserDetailsServiceとはなにか？
+// Spring SecurityのUserDetailsオブジェクトを作成して返す
+//Spring Securityの活用に必要なクラス
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UsersRepository usersRepository; // あなたのユーザーリポジトリをDI
-
+    private final UsersRepository usersRepository; 
     public CustomUserDetailsService(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
     }
@@ -28,12 +28,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         Users user = usersRepository.findByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        // Spring SecurityのUserDetailsオブジェクトを作成して返す
+        
         // ここでユーザーの権限（ロール）も設定
         return new org.springframework.security.core.userdetails.User(
                 user.getUserName(),
                 user.getPasswordHash(), // DBに保存されたハッシュ化されたパスワード
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getUserRole())) // ← ここ大事！
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getUserRole())) // ← ここ大事
                 //new ArrayList<>() // ユーザーの権限（例: new SimpleGrantedAuthority("ROLE_" + user.getRole()))
         );
     }

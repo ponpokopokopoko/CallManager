@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 
-//4、パスワード変更リクエストのDTO
+//パスワード変更リクエストのDTO
 @Data
 class AdminPasswordUpdateRequest {
     @NotBlank(message = "新しいパスワードは必須です。")

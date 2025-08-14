@@ -24,8 +24,8 @@ public class HelloController {
 	            // ADMINがいなければ管理者セットアップ画面へ
 	            return "admin-setup";
 	        } else {
-	            // ADMINがいれば通常のトップページへ
-	            return "login"; // 例: index.html
+	            // ADMINがいれば通常ログインページへ
+	            return "login"; 
 	        }
 	    }
 
