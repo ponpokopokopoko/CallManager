@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ja"  xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理者メニュー</title>
+  <style>
+    /* ===== Reset & tokens ===== */
+	*,
+	*::before,
+	*::after { box-sizing: border-box; }
+	
+	:root{
+	  --bg:#f6f7fb;
+	  --panel:#ffffff;
+	  --ink:#1f2937;
+	  --sub:#6b7280;
+	  --line:#e5e7eb;
+	  --primary:#2563eb;
+	  --primary-ink:#fff;
+	  --danger:#ef4444;
+	  --radius:16px;
+	  --shadow:0 10px 24px rgba(0,0,0,.08);
+	  --ring:0 0 0 4px rgba(37,99,235,.15);
+	}
+	
+	/* ===== Page ===== */
+	html,body{height:100%;}
+	body{
+	  margin:0;
+	  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+	  color:var(--ink);
+	  background:
+	    radial-gradient(1200px 800px at 20% -10%,#eef2ff,transparent),
+	    radial-gradient(1000px 700px at 120% 0%,#fef3c7,transparent),
+	    var(--bg);
+	}
+	
+	header{
+	  max-width:1040px;
+	  margin:32px auto 12px;
+	  padding:0 20px;
+	  display:flex;
+	  align-items:center;
+	  gap:12px;
+	}
+	header h1{margin:0;font-size:20px;letter-spacing:.02em;}
+	header p{margin:0;color:var(--sub);font-size:12px;}
+	
+	form[action="/logout"]{
+	  margin-left:auto;
+	}
+	form[action="/logout"] button{
+	  border:1px solid var(--line);
+	  background:#fff;
+	  padding:8px 14px;
+	  border-radius:999px;
+	  cursor:pointer;
+	  transition:background .2s, box-shadow .2s;
+	}
+	form[action="/logout"] button:hover{
+	  background:#f9fafb;
+	  box-shadow:0 2px 8px rgba(0,0,0,.06);
+	}
+	
+	/* ===== Main layout ===== */
+	main{
+	  max-width:1040px;
+	  margin:0 auto;
+	  padding:24px 20px 60px;
+	  display:grid;
+	  gap:20px;
+	}
+	
+	/* ===== Card ===== */
+	.card{
+	  background:var(--panel);
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  box-shadow:var(--shadow);
+	  padding:22px;
+	}
+	
+	/* 挨拶エリア */
+	section[aria-label="ユーザー情報"]{
+	  composes: card;
+	}
+	
+	/* 管理セクション */
+	section[aria-label="アカウント管理"],
+	section[aria-label="ユーザー管理"]{
+	  display:grid;
+	  gap:20px;
+	  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	  align-items: start;
+	}
+	
+	/* ←見出し(h2)を1行フル幅にする */
+	section[aria-label="アカウント管理"] > h2,
+	section[aria-label="ユーザー管理"] > h2{
+	  grid-column: 1 / -1;   /* 1列目から最終列まで */
+	  margin: 0 0 6px;       /* 好みで調整 */
+	  font-size: 24px;       /* 好みで調整：太めの見出し */
+	  line-height: 1.3;
+	}
+	
+	/* 各 fieldset をカード化 */
+	fieldset{
+	  margin:0;
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  background:var(--panel);
+	  box-shadow:var(--shadow);
+	  padding:20px;
+	}
+	legend{
+	  padding:0 8px;
+	  font-weight:700;
+	  color:var(--sub);
+	}
+	
+	
+	
+	/* ===== Form elements ===== */
+	label{
+	  display:block;
+	  margin-top:14px;
+	  font-size:13px;
+	  color:var(--sub);
+	}
+	
+	input[type="text"],
+	input[type="password"],
+	select{
+	  width:100%;
+	  margin-top:6px;
+	  padding:12px 14px;
+	  font-size:16px;
+	  border:1px solid var(--line);
+	  border-radius:12px;
+	  background:#fff;
+	  outline:none;
+	  transition:border-color .2s, box-shadow .2s, transform .02s;
+	}
+	input:focus, select:focus{
+	  border-color:var(--primary);
+	  box-shadow:var(--ring);
+	}
+	input:active, select:active{ transform: translateY(.5px); }
+	
+	select{
+	  appearance:none;
+	  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2399a3b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+	  background-repeat:no-repeat;
+	  background-position:right 12px center;
+	  background-size:20px 20px;
+	  padding-right:40px;
+	}
+	select:invalid{ color:#9ca3af; }
+	
+	/* ===== Buttons ===== */
+	button{
+	  display:block;
+	  width:100%;
+	  margin-top:20px;
+	  padding:12px 16px;
+	  border:0;
+	  border-radius:12px;
+	  font-weight:700;
+	  letter-spacing:.02em;
+	  cursor:pointer;
+	  transition:transform .08s ease, filter .2s ease, box-shadow .2s ease;
+	}
+	
+	/* 青ボタン（作成・変更） */
+	#accountCreateBtn,
+	#userCreateBtn,
+	#userPassChangeBtn{
+	  background:linear-gradient(180deg,#3b82f6,#2563eb);
+	  color:var(--primary-ink);
+	  box-shadow:0 6px 16px rgba(37,99,235,.25);
+	}
+	#accountCreateBtn:hover,
+	#userCreateBtn:hover,
+	#userPassChangeBtn:hover{ filter:brightness(1.03); }
+	#accountCreateBtn:active,
+	#userCreateBtn:active,
+	#userPassChangeBtn:active{ transform:translateY(1px); box-shadow:0 4px 10px rgba(37,99,235,.25); }
+	
+	/* 赤ボタン（削除） */
+	#accountDeleteBtn,
+	#userDeleteBtn{
+	  background:linear-gradient(180deg,#f87171,#ef4444);
+	  color:#fff;
+	  box-shadow:0 6px 16px rgba(239,68,68,.25);
+	}
+	#accountDeleteBtn:hover,
+	#userDeleteBtn:hover{ filter:brightness(1.03); }
+	#accountDeleteBtn:active,
+	#userDeleteBtn:active{ transform:translateY(1px); }
+	
+	/* エラーメッセージ */
+	#error, #userPassError{
+	  margin-top:12px;
+	  padding:10px 12px;
+	  border:1px solid #fecaca;
+	  background:#fff1f2;
+	  color:#b91c1c;
+	  border-radius:10px;
+	  font-size:14px;
+	  display:none;
+	}
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>管理者メニュー</h1>
+    <p>電話管理アプリ</p>
+  </header>
+
+  <main>
+    <!-- ログアウト -->
+    
+    <form action="/logout" method="post">
+	  <button type="submit">ログアウト</button>
+	</form>
+
+    
+
+    <!-- ユーザー情報表示 -->
+    <section aria-label="ユーザー情報">
+      <p th:if="${#authentication != null}" th:text="|こんにちは、${#authentication?.name}さん！|">こんにちは、ゲストさん！</p>
+    </section>
+
+    <!-- アカウント操作 -->
+    <section aria-label="アカウント管理">
+      <h2>アカウント</h2>
+
+      <!-- 新規アカウント作成 -->
+      <fieldset>
+        <legend>新規アカウント作成</legend>
+        <form id="accountCreateForm">
+          <label for="accountName">アカウント名</label>
+          <input id="accountName" name="accountName" type="text" required>
+
+			<!--スプシURL機能
+          <label for="accountUrl1">URL1</label>
+          <input id="accountUrl1" name="url1" type="text">
+
+          <label for="accountUrl2">URL2</label>
+          <input id="accountUrl2" name="url2" type="text">
+
+          <label for="accountUrl3">URL3</label>
+          <input id="accountUrl3" name="url3" type="text">
+           -->
+
+          <button id='accountCreateBtn'>作成</button>
+        </form>
+      </fieldset>
+
+      <!-- アカウント削除 -->
+      <fieldset>
+        <legend>アカウント削除</legend>
+        <form id="accountDeleteForm">
+          <label for="deleteAccountSelect">アカウント選択</label>
+          <select id="deleteAccountSelect" name="accountName">
+            <option value="toguru">アカウント選択</option>
+          </select>
+          
+          <button id="accountDeleteBtn">削除</button>
+        </form>
+      </fieldset>
+
+  <!--     
+      <fieldset>
+        <legend>リンクURL設定変更</legend>
+        <form id="accountUpdateForm">
+          <label for="updateAccountSelect">アカウント選択</label>
+          <select id="updateAccountSelect" name="accountName">
+            <option value="toguru">toguru</option>
+            
+          </select>
+
+          <label for="updateUrl1">URL1</label>
+          <input id="updateUrl1" name="url1" type="text">
+
+          <label for="updateUrl2">URL2</label>
+          <input id="updateUrl2" name="url2" type="text">
+
+          <label for="updateUrl3">URL3</label>
+          <input id="updateUrl3" name="url3" type="text">
+
+          <button id="accountUpdateBtn">変更</button>
+        </form>
+      </fieldset> 
+-->
+    </section>
+
+    <!-- ユーザー操作 -->
+    <section aria-label="ユーザー管理">
+      <h2>ユーザー</h2>
+
+      <!-- 新規ユーザー作成 -->
+      <fieldset>
+        <legend>新規作成</legend>
+        <form id="userCreateForm">
+          <label for="newUsername">ユーザー名</label>
+          <input id="newUsername"  type="text" required>
+
+          <label for="userPassword">パスワード</label>
+          <input id="userPassword"  type="password" required>
+
+          <label for="userPasswordCheck">パスワード確認</label>
+          <input id="userPasswordCheck"  type="password" required>
+
+          <button id="userCreateBtn">作成</button>
+          <div id="error"></div>
+        </form>
+      </fieldset>
+
+      <!-- ユーザー削除 -->
+      <fieldset>
+        <legend>ユーザー削除</legend>
+        <form id="userDeleteFrom">
+          <label for="deleteUserSelect">ユーザー選択</label>
+          <select id="deleteUserSelect">
+            <option value="toguru">ユーザー選択</option>
+          </select>
+          <button id="userDeleteBtn">削除</button>
+        </form>
+      </fieldset>
+
+      <!-- 管理者パスワード変更 -->
+      <fieldset>
+        <legend>管理者パスワード変更</legend>
+        <form id="userPassChangeForm">
+		
+			<label for="updateUserSelect">ユーザー選択</label>
+	        <select id="updateUserSelect">
+	          <option value="toguru">ユーザー選択</option>
+	        </select>
+	        <label for="newPassword">新パスワード</label>
+	        <input id="newPassword"  type="password" required>
+	
+          	<label for="newPasswordCheck">新パスワード確認</label>
+	        <input id="newPasswordCheck" type="password" required>
+	        
+	        <button id="userPassChangeBtn">変更</button>
+	        <div id="userPassError"></div>
+        </form>
+      </fieldset>
+    </section>
+  </main>
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+
+    // 共通関数：accountsを指定した複数のセレクトに入れる
+    async function loadAccountsIntoSelects(selectIds = []) {
+      try {
+        const response = await fetch('/api/accounts');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const accounts = await response.json();
+
+        selectIds.forEach(selectId => {
+          const select = document.getElementById(selectId);
+          select.innerHTML = '<option value="" disabled selected>選択してください</option>';
+          accounts.forEach(account => {
+            const option = document.createElement('option');
+            option.value = account.id; // IDの方が安全（accountNameより一意）
+            option.textContent = account.accountName;
+            select.appendChild(option);
+          });
+        });
+
+      } catch (error) {
+        console.error('アカウント取得中にエラー:', error);
+        selectIds.forEach(selectId => {
+          const select = document.getElementById(selectId);
+          const errorOption = document.createElement('option');
+          errorOption.value = "";
+          errorOption.disabled = true;
+          errorOption.textContent = "読み込み失敗";
+          select.appendChild(errorOption);
+        });
+      }
+    }
+
+    // ✅ accountsを複数のセレクトボックスに投入
+    await loadAccountsIntoSelects(['deleteAccountSelect'/*, 'updateAccountSelect'*/]);
+
+    // ✅ ユーザーセレクトの読み込み（別API）
+    async function loadUsersIntoSelect(selectIds = []) {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) throw new Error(`status: ${response.status}`);
+        const users = await response.json();
+        
+        selectIds.forEach(selectId => {
+			const select = document.getElementById(selectId);
+	        select.innerHTML = '<option value="" disabled selected>選択してください</option>';
+	        users.forEach(user => {
+	          const option = document.createElement('option');
+	          option.value = user.userId; // または user.username
+	          option.textContent = user.userName;
+	          select.appendChild(option);
+          });
+        });
+
+      
+
+      } catch (error) {
+        console.error('ユーザー取得エラー:', error);
+        selectIds.forEach(selectId => {
+	        const select = document.getElementById(selectId);
+	        const errorOption = document.createElement('option');
+	        errorOption.value = "";
+	        errorOption.disabled = true;
+	        errorOption.textContent = '読み込み失敗';
+	        select.appendChild(errorOption);
+        });
+      }
+    }
+
+    // ✅ ユーザー削除フォームのselectに投入
+    await loadUsersIntoSelect(['deleteUserSelect'/*,'updateUserSelect'*/]);
+    
+ 
+    
+    
+    //アカウント作成を押した場合の対応
+    document.getElementById('accountCreateBtn').addEventListener('click', async (e) => {
+		  e.preventDefault();
+		  const data = {
+		    accountName: document.getElementById('accountName').value,
+		    //dataSheetUrl: document.getElementById('accountUrl1').value,
+		    //benefitsSheetUrl: document.getElementById('accountUrl2').value,
+		    //recontactSheetUrl: document.getElementById('accountUrl3').value
+		  };
+		
+		  const res = await fetch('/api/accounts', {
+		    method: 'POST',
+		    headers: { 'Content-Type': 'application/json' },
+		    body: JSON.stringify(data)
+		  });
+		
+		  if (res.ok) {
+			  
+		    alert('アカウント作成成功！');
+		    // 必要ならトグルを更新する処理もここに追加
+		     document.getElementById('accountCreateForm').reset(); // フォームをリセット
+			  // トグルを更新（selectの中身を最新にする）
+			  await loadAccountsIntoSelects(['deleteAccountSelect'/*, 'updateAccountSelect'*/]);
+			  
+		  } else {
+		    alert('失敗しました');
+		  }
+		});
+		
+		//アカウント削除を押した場合の対応
+		   document.getElementById('accountDeleteBtn').addEventListener('click', async (e) => {
+		  e.preventDefault();
+		
+		  const select = document.getElementById('deleteAccountSelect');
+		  const selectedId = select.value;
+		  console.log(selectedId);
+		  const selectedName = select.options[select.selectedIndex].textContent;
+		  
+		  
+		
+		  if (!selectedId) {
+		    alert('アカウントを選択してください！');
+		    return;
+		  }
+		  
+		  const confirmed = confirm(`本当に「${selectedName}」を削除しますか？`);
+ 			 if (!confirmed) return;
+		
+		  const res = await fetch(`/api/accounts/${selectedId}`, {
+		    method: 'DELETE'
+		  });
+		
+		  if (res.ok) {
+		    alert('アカウント削除成功！');
+		    // selectから削除する、トグル再読み込み、などをここで追加もOK
+		      document.getElementById('accountDeleteForm').reset(); // フォームをリセット
+			  // トグルを更新（selectの中身を最新にする）
+			  await loadAccountsIntoSelects(['deleteAccountSelect'/*, 'updateAccountSelect'*/]);
+			 
+		  } else if (res.status === 403) {
+			  const message = await res.text(); // ← Javaからの文字列を受け取る
+			  alert(`削除できません: ${message}`);
+		  }else {
+		  	  alert('削除に失敗しました');
+		  }
+		});
+		
+		
+	/*//アカウント,リンクの変更を押した場合の対応
+    document.getElementById('accountUpdateBtn').addEventListener('click', async (e) => {
+		  e.preventDefault();
+		  
+		  const select = document.getElementById('updateAccountSelect');
+		  const selectedId = select.value;
+		  console.log(selectedId);
+		  
+		  const data = {
+		    dataSheetUrl: document.getElementById('updateUrl1').value,
+		    benefitsSheetUrl: document.getElementById('updateUrl2').value,
+		    recontactSheetUrl: document.getElementById('updateUrl3').value
+		  };
+		
+		  const res = await fetch(`/api/accounts/${selectedId}/sheets`, {
+		    method: 'PATCH',
+		    headers: { 'Content-Type': 'application/json' },
+		    body: JSON.stringify(data)
+		  });
+		
+		  if (res.ok) {
+			  
+		    alert('URL変更成功！');
+		    // 必要ならトグルを更新する処理もここに追加
+		     document.getElementById('accountUpdateForm').reset(); // フォームをリセット
+			  // トグルを更新（selectの中身を最新にする）
+			  await loadAccountsIntoSelects(['deleteAccountSelect', 'updateAccountSelect']);
+			  
+		  } else {
+		    alert('失敗しました');
+		  }
+		});*/
+		
+		
+		//ユーザー作成を押した場合の対応
+    document.getElementById('userCreateBtn').addEventListener('click', async (e) => {
+		  e.preventDefault();
+		  
+		  const username = document.getElementById('newUsername').value;
+		  const checkPass = document.getElementById('userPasswordCheck').value;
+		  const password = document.getElementById('userPassword').value;
+		  const errorDiv = document.getElementById('error');
+		  
+		  errorDiv.textContent = ''; // エラーをリセット
+
+        if (password !== checkPass) {
+          errorDiv.textContent = 'パスワードと確認用パスワードが一致しません。';
+          return;
+        }
+
+        if (password.length < 8) {
+          errorDiv.textContent = 'パスワードは8文字以上にしてください。';
+          return;
+        }
+	
+		  const data = {
+		    username: username,
+		    password: password
+		    
+		  };
+		
+		  const res = await fetch('/api/users', {
+		    method: 'POST',
+		    headers: { 'Content-Type': 'application/json' },
+		    body: JSON.stringify(data)
+		  });
+		
+		  if (res.ok) {
+			  
+		    alert('アカウント作成成功！');
+		    
+		    // 必要ならトグルを更新する処理もここに追加
+		     document.getElementById('userCreateForm').reset(); // フォームをリセット
+			  // トグルを更新（selectの中身を最新にする）
+			  await loadUsersIntoSelect(['deleteUserSelect','updateUserSelect']);
+			  
+		  } else {
+		    alert('失敗しました');
+		  }
+		});
+		
+		
+		//ユーザー削除を押した場合の対応
+		   document.getElementById('userDeleteBtn').addEventListener('click', async (e) => {
+		  e.preventDefault();
+		
+		  const select = document.getElementById('deleteUserSelect');
+		  const selectedId = select.value;
+		  console.log(selectedId);
+		  const selectedName = select.options[select.selectedIndex].textContent;
+		
+		  if (!selectedId) {
+		    alert('アカウントを選択してください！');
+		    return;
+		  }
+		  
+		  const confirmed = confirm(`本当に「${selectedName}」を削除しますか？`);
+ 			 if (!confirmed) return;
+		
+		  const res = await fetch(`/api/users/${selectedId}`, {
+		    method: 'DELETE'
+		  });
+		
+		  if (res.ok) {
+		    alert('ユーザー削除成功！');
+		    // selectから削除する、トグル再読み込み、などをここで追加もOK
+			  // トグルを更新（selectの中身を最新にする）
+			  await loadUsersIntoSelect(['deleteUserSelect','updateUserSelect']);
+			  
+		  } else if (res.status === 403) {
+			  const message = await res.text(); // ← Javaからの文字列を受け取る
+			  alert(`削除できません: ${message}`);
+		  }else {
+		    alert('削除に失敗しました');
+		  }
+		});
+		
+		
+		//ユーザーパスワード変更を押した場合の対応
+    document.getElementById('userPassChangeBtn').addEventListener('click', async (e) => {
+		  e.preventDefault();
+		  
+		  const selectedId= document.getElementById('updateUserSelect').value;
+		  const checkPass = document.getElementById('newPasswordCheck').value;
+		  const password = document.getElementById('newPassword').value;
+		  const errorDiv = document.getElementById('userPassError');
+		  
+		  errorDiv.textContent = ''; // エラーをリセット
+		  
+		  const selectedName = select.options[select.selectedIndex].textContent;
+		  const confirmed = confirm(`本当に「${selectedName}」のパスワードを変更しますか？`);
+ 			 if (!confirmed) return;
+
+        if (password !== checkPass) {
+          errorDiv.textContent = 'パスワードと確認用パスワードが一致しません。';
+          return;
+        }
+
+        if (password.length < 8) {
+          errorDiv.textContent = 'パスワードは8文字以上にしてください。';
+          return;
+        }
+	
+		  const data = {
+		    newPassword: password
+		  };
+		
+		  const res = await fetch(`/api/users/${selectedId}/password`, {
+		    method: 'PATCH',
+		    headers: { 'Content-Type': 'application/json' },
+		    body: JSON.stringify(data)
+		  });
+		
+		  if (res.ok) {
+			  
+		    alert('パスワードを変更しました！');
+		    
+		    // 必要ならトグルを更新する処理もここに追加
+		     document.getElementById('userPassChangeForm').reset(); // フォームをリセット
+			  // トグルを更新（selectの中身を最新にする）
+			  await loadUsersIntoSelect(['deleteUserSelect','updateUserSelect']);
+			  
+		  } else {
+		    alert('失敗しました');
+		    errorDiv.textContent = `エラーが発生しました: ${error}`;
+		  }
+		});
+	
+
+
+  });
+</script>
+
+
+</body>
+</html>

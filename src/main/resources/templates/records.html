@@ -1,0 +1,681 @@
+<!DOCTYPE html><!--データ入力-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>データ入力</title>
+		<style>
+	/* ===== Reset & tokens ===== */
+	*,
+	*::before,
+	*::after { box-sizing: border-box; }
+	
+	:root{
+	  --bg:#f6f7fb;
+	  --panel:#ffffff;
+	  --ink:#1f2937;
+	  --sub:#6b7280;
+	  --line:#e5e7eb;
+	  --primary:#2563eb;
+	  --primary-ink:#fff;
+	  --danger:#ef4444;
+	  --radius:16px;
+	  --shadow:0 10px 24px rgba(0,0,0,.08);
+	  --ring:0 0 0 4px rgba(37,99,235,.15);
+	}
+	
+	
+	
+	/* ===== Page ===== */
+	html,body{height:100%;}
+	
+	body{ background: var(--bg) !important; }
+	
+	/* Header */
+	header{
+	  max-width:1000px;
+	  margin:32px auto 12px;
+	  padding:0 20px;
+	  display:flex;
+	  align-items:center;
+	  gap:12px;
+	}
+	header h1{ margin:0; font-size:20px; letter-spacing:.02em; }
+	header p{ margin:0; color:var(--sub); font-size:12px; }
+	
+	/* ===== Main ===== */
+	main{
+	  max-width:1000px;
+	  margin:0 auto;
+	  padding:24px 20px 60px;
+	  display:grid;
+	  gap:20px;
+	}
+	
+	/* 挨拶 */
+	main > p{
+	  margin:0;
+	  color:var(--sub);
+	  font-weight:600;
+	}
+	
+	/* 戻るボタン（ピル） */
+	form[action="/general-menu"]{ margin-left:auto; }
+	form[action="/general-menu"] button{
+	  border:1px solid var(--line);
+	  background:#fff;
+	  padding:8px 14px;
+	  border-radius:999px;
+	  cursor:pointer;
+	  transition:background .2s, box-shadow .2s;
+	}
+	form[action="/general-menu"] button:hover{
+	  background:#f9fafb;
+	  box-shadow:0 2px 8px rgba(0,0,0,.06);
+	}
+	
+	/* ===== Performance（上の成績テーブル） ===== */
+	section > table{
+	  width:100%;
+	  border-collapse:collapse;
+	  background:var(--panel);
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  box-shadow:var(--shadow);
+	  overflow:hidden;
+	}
+	section > table thead th{
+	  background:#f8fafc;
+	  color:#475569;
+	  font-weight:700;
+	  font-size:13px;
+	  padding:12px 14px;
+	  border-bottom:1px solid var(--line);
+	  text-align:left;
+	  white-space:nowrap;
+	}
+	section > table tbody td{
+	  border-top:1px solid var(--line);
+	  padding:12px 14px;
+	}
+	
+	/* ===== 入力フォーム（カード化） ===== */
+	#recordInputForm{
+	  background:var(--panel);
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  box-shadow:var(--shadow);
+	  padding:22px;
+	}
+	#recordInputForm > table{
+	  width:100%;
+	  border-collapse:collapse;
+	}
+	#recordInputForm thead th{
+	  background:#f8fafc;
+	  color:#475569;
+	  font-weight:700;
+	  font-size:13px;
+	  padding:10px 12px;
+	  border-bottom:1px solid var(--line);
+	  text-align:left;
+	}
+	#recordInputForm tbody td{
+	  border-top:1px solid var(--line);
+	  padding:10px 12px;
+	  vertical-align:middle;
+	}
+	
+	/* 入力要素（フォーム内） */
+	#recordInputForm input
+	#recordInputForm select{
+	  width:100%;
+	  padding:10px 12px;
+	  font-size:15px;
+	  border:1px solid var(--line);
+	  border-radius:12px;
+	  background:#fff;
+	  outline:none;
+	  transition:border-color .2s, box-shadow .2s, transform .02s;
+	}
+	#recordInputForm select{
+	  appearance:none;
+	  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2399a3b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+	  background-repeat:no-repeat;
+	  background-position:right 10px center;
+	  background-size:20px 20px;
+	  padding-right:38px;
+	}
+	#recordInputForm input:focus,
+	#recordInputForm select:focus{
+	  border-color:var(--primary);
+	  box-shadow:var(--ring);
+	}
+	#recordInputForm input:active,
+	#recordInputForm select:active{ transform: translateY(.5px); }
+	
+	/* 送信/キャンセルボタン */
+	#submitButton,
+	#cancelEditButton{
+	  display:inline-block;
+	  min-width:140px;
+	  margin-top:14px;
+	  padding:12px 16px;
+	  border:0;
+	  border-radius:12px;
+	  font-weight:700;
+	  letter-spacing:.02em;
+	  cursor:pointer;
+	  transition:transform .08s, filter .2s, box-shadow .2s;
+	}
+	#submitButton{
+	  background:linear-gradient(180deg,#3b82f6,#2563eb);
+	  color:var(--primary-ink);
+	  box-shadow:0 6px 16px rgba(37,99,235,.25);
+	}
+	#submitButton:hover{ filter:brightness(1.03); }
+	#submitButton:active{ transform:translateY(1px); box-shadow:0 4px 10px rgba(37,99,235,.25); }
+	
+	#cancelEditButton{
+	  background:#eef2ff;
+	  color:#1e3a8a;
+	  margin-left:8px;
+	  border:1px solid #e0e7ff;
+	}
+	#cancelEditButton:hover{ filter:brightness(1.02); }
+	#cancelEditButton:active{ transform:translateY(1px); }
+	
+	/* ===== 通話記録一覧（下のテーブル） ===== */
+	main > h2{
+	  margin:8px 0 0;
+	  color:var(--sub);
+	  font-size:14px;
+	}
+	main > table{
+	  width:100%;
+	  border-collapse:collapse;
+	  background:var(--panel);
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  box-shadow:var(--shadow);
+	  overflow:hidden;
+	}
+	main > table thead th{
+	  background:#f8fafc;
+	  color:#475569;
+	  font-weight:700;
+	  font-size:13px;
+	  padding:12px 14px;
+	  border-bottom:1px solid var(--line);
+	  text-align:left;
+	  white-space:nowrap;
+	}
+	main > table tbody td{
+	  border-top:1px solid var(--line);
+	  padding:12px 14px;
+	  vertical-align:middle;
+	}
+	main > table tbody tr:nth-child(odd){ background:#fcfcff; }
+	
+	/* インライン編集セルの見た目 */
+	td.editable{ cursor:text; }
+	td.editable:hover{ background:#f4f7ff; }
+	
+	/* 削除ボタン */
+	button.delete-btn{
+	  padding:10px 14px;
+	  border:0;
+	  border-radius:12px;
+	  background: linear-gradient(180deg,#f87171,#ef4444);
+	  color:#fff;
+	  font-weight:700;
+	  cursor:pointer;
+	  box-shadow:0 6px 16px rgba(239,68,68,.25);
+	  transition:transform .08s, filter .2s, box-shadow .2s;
+	}
+	button.delete-btn:hover{ filter:brightness(1.03); }
+	button.delete-btn:active{ transform:translateY(1px); }
+	
+
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>データ入力</h1>
+    		<p>電話管理アプリ</p>
+		</header>
+		<main>
+			<p th:if="${#authentication != null}" th:text="|こんにちは、${#authentication?.name}${accountId}さん！|">こんにちは、ゲストさん！</p>
+			<form action="/general-menu" method="get">
+				<button type="submit">戻る</button>
+			</form>
+			
+			<input type="hidden" id="accountId" th:value="${accountId}">
+
+			<section><!--個人成績作るだけ -->
+				<table border="1">
+				  <thead>
+				    <tr>
+				      <th>指標</th>
+				      <th colspan="2">今日</th>
+				      <th colspan="2">今週</th>
+				      <th colspan="2">今月</th>
+				    </tr>
+				    <tr>
+				      <th></th>
+				      <th>件数</th><th>率</th>
+				      <th>件数</th><th>率</th>
+				      <th>件数</th><th>率</th>
+				    </tr>
+				  </thead>
+				  <tbody id="performance-body">
+				    <!-- JSがここに行を追加する -->
+				  </tbody>
+			</table>
+			</section>
+
+		  <p>入力</p>
+		  <form id="recordInputForm">
+		    <table>
+		      <thead>
+		        <tr>
+		          <th>通話日時</th>
+		          <th>電話番号</th>
+		          <th>ステータス</th>
+		          <th>通話結果</th>
+		          <th>アポ日時</th>
+		          <th>結果詳細</th>
+		          <th>再連絡日付</th>
+		          <th>再連絡時間</th>
+		          <th>対応者</th>
+		          <th>特典有無</th>
+		          <th>特典対象チェック</th>
+		        </tr>
+		      </thead>
+		      <tbody>
+		        <tr>
+		          <td><input type="datetime-local" name="callTime" required></td>
+		          <td><input type="tel" name="telephoneNumber" required></td>
+		          <td>
+		            <select name="status" required>
+		              <option value="">選択</option>
+		              <option value="1">新規</option>
+		              <option value="2">再交渉</option>
+		            </select>
+		          </td>
+		          <td>
+		            <select name="result" required>
+		              <option value="">選択</option>
+		              <option value="1">導入負け</option>
+		              <option value="2">ヒアリング負け</option>
+		              <option value="3">提案負け</option>
+		              <option value="4">アポ</option>
+		              <option value="5">電話連絡拒否</option>
+		              <option value="6">販売不可案件</option>
+		              <option value="7">個人再連絡</option>
+		            </select>
+		          </td>
+		          <td><input type="datetime-local" name="appoTime"></td>
+		          <td>
+		            <select name="resultDetail" required>
+		              <option value="">選択</option>
+		              <option value="1">期待感無し</option>
+		              <option value="2">時間なし</option>
+		              <option value="3">既に商談済み</option>
+		              <option value="4">日程組めず</option>
+		              <option value="5">電話番号間違い</option>
+		              <option value="6">購入済み</option>
+		            </select>
+		          </td>
+		          <td><input type="date" name="recontactDate"></td>
+		          <td><input type="time" name="recontactTime"></td>
+		          <td>
+		            <select name="handler">
+					  <option value="" selected>選択してください</option>
+		              <option value="SELF_ONLY">自分</option>
+		              <option value="ANYONE">誰でも</option>	
+		            </select>
+		          </td>
+		          <td>
+		            <select name="isBenefits">
+					  <option value="" selected>選択してください</option>
+		              <option value="true">あり</option>
+		              <option value="false">なし</option>
+		            </select>
+		          </td>
+		          <td>
+		            <select name="benefitsTargetsCheck">
+					  <option value="" selected>選択してください</option>
+		              <option value="true">対象</option>
+		              <option value="false">対象外</option>
+		            </select>
+		          </td>
+		        </tr>
+		      </tbody>
+		    </table>
+		    <br>
+		    <button type="submit"  id="submitButton">登録</button>
+		    <button type="button" id="cancelEditButton" style="display: none;">キャンセル</button>
+		  </form>
+
+		  <!-- 以下記録-->
+		  <h2>通話記録一覧</h2>
+			<table border="1" >
+			  <thead>
+			    <tr data-record-id="5">
+			      <th>ID</th>
+			      <th>アカウント</th>
+			      <th>通話時間</th>
+			      <th>電話番号</th>
+			      <th>ステータス</th>
+			      <th>結果</th>
+			      <th>アポ時間</th>
+			      <th>詳細結果</th>
+			      <th>再連絡</th>
+			      <th>対応者</th>
+			      <th>特典</th>
+			      <th>特典チェック</th>
+			      <th>削除</th>
+			    </tr>
+			  </thead>
+			  <tbody id="records-table-body">
+			    <!-- JSでここに行を追加 -->
+			  </tbody>
+			</table>
+		</main>
+
+<script>
+// グローバル変数
+let selectedRecordId = null; // null = 新規モード
+const accountId = document.getElementById("accountId").value; // 認証済みユーザーのアカウントID
+
+// 初期化処理
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("recordInputForm").addEventListener("submit", handleSubmit);
+  document.getElementById("cancelEditButton").addEventListener("click", resetForm);
+  document.getElementById("records-table-body").addEventListener("click", handleTableClick);
+
+  fetchAndRenderRecords();
+  fetchAndRenderAnalysis();
+});
+
+/** フォーム送信 (新規作成 or 更新) */
+async function handleSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = buildFormData(form);
+
+  // バリデーション
+  const validationError = validateFormData(formData);
+  if (validationError) {
+    alert(validationError);
+    return;
+  }
+
+  const url = selectedRecordId
+    ? `/api/salesRecords/${selectedRecordId}`
+    : "/api/salesRecords";
+  const method = selectedRecordId ? "PATCH" : "POST";
+
+  try {
+    const res = await fetch(url, {
+      method,
+      credentials: "include",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
+    alert(selectedRecordId ? "更新完了！" : "登録完了！");
+    resetForm();
+    fetchAndRenderRecords();
+    fetchAndRenderAnalysis();
+  } catch (err) {
+    console.error("送信失敗:", err);
+    alert("送信エラーが発生しました");
+  }
+}
+
+/** テーブル内クリック (編集用セル or 削除ボタン) */
+function handleTableClick(e) {
+  const td = e.target.closest("td.editable");
+  if (td && !td.querySelector("input")) {
+    startInlineEdit(td);
+    return;
+  }
+
+  const btn = e.target.closest("button.delete-btn");
+  if (btn) {
+    e.stopPropagation();
+    handleDelete(btn.dataset.id);
+  }
+}
+
+/* インライン編集開始 */
+function startInlineEdit(td) {
+  const oldValue = td.textContent.trim();
+  td.innerHTML = `<input type=\"text\" value=\"${oldValue}\" style=\"width:100%\">`;
+  const input = td.querySelector("input");
+  input.focus();
+  input.addEventListener("blur", () => {
+    const newValue = input.value.trim();
+    td.textContent = newValue;
+    const field = td.dataset.field;
+    const recordId = td.closest("tr").children[0].textContent;
+    updateRecord(recordId, field, newValue);
+  });
+}
+
+/* レコード削除 */
+async function handleDelete(recordId) {
+  if (!confirm(`ID:${recordId} を削除しますか？`)) return;
+  try {
+    const res = await fetch(`/api/salesRecords/${recordId}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    alert("削除しました");
+    resetForm();
+    fetchAndRenderRecords();
+    fetchAndRenderAnalysis();
+  } catch (err) {
+    console.error("削除エラー:", err);
+    alert("削除中にエラーが発生しました");
+  }
+}
+
+/*　レコード一覧取得・描画 */
+async function fetchAndRenderRecords() {
+  const tbody = document.getElementById("records-table-body");
+  tbody.innerHTML = "";
+  try {
+    const res = await fetch(`/api/salesRecords?accountId=${accountId}`, {
+      credentials: "include",
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
+    if (res.status === 204) {
+      renderRecords([]);
+      return;
+    }
+
+    const data = await res.json();
+    renderRecords(data);
+  } catch (err) {
+    console.error("取得失敗:", err);
+    tbody.innerHTML = `<tr><td colspan=15>取得エラーが発生しました</td></tr>`;
+  }
+}
+
+/*レコード描画 */
+function renderRecords(data) {
+  const tbody = document.getElementById("records-table-body");
+  if (!Array.isArray(data) || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan=15>データがありません</td></tr>`;
+    return;
+  }
+
+  data.forEach(record => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${record.recordId}</td>
+      <td>${record.accountName}</td>
+      <td class="editable" data-field="callTime">${formatDateTime(record.callTime)}</td>
+      <td class="editable" data-field="telephoneNumber">${record.telephoneNumber}</td>
+      <td class="editable" data-field="status">${record.status}</td>
+      <td class="editable" data-field="result">${record.result}</td>
+      <td class="editable" data-field="appoTime">${formatDateTime(record.appoTime)}</td>
+      <td>${formatNullable(record.resultDetail)}</td>
+      <td class="editable" data-field="recontactDate">${formatDateTime(record.recontactDate)}</td>
+      <td>${record.handler === "SELF_ONLY" ? "自分" : record.handler === "ANYONE" ? "誰でも" : "―"}</td>
+      <td>${record.isBenefits ? "〇" : record.isBenefits === false ? "×" : "―"}</td>
+      <td>${record.benefitsTargetsCheck ? "〇" : record.benefitsTargetsCheck === false ? "×" : "―"}</td>
+      <td><button type="button" class="delete-btn" data-id="${record.recordId}">削除</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/** 分析データ取得・描画 */
+async function fetchAndRenderAnalysis() {
+  try {
+    const res = await fetch("/api/userAnalysis", {
+      credentials: "include",
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`分析APIエラー ${res.status}:`, text);
+      return;
+    }
+
+    const data = await res.json();
+    renderAnalysisTable(data);
+  } catch (err) {
+    console.error("fetchAndRenderAnalysis 例外:", err);
+  }
+}
+
+/** 分析テーブル描画 */
+function renderAnalysisTable(data) {
+  const periods = [
+    { key: "today", label: "今日" },
+    { key: "thisWeek", label: "今週" },
+    { key: "thisMonth", label: "今月" }
+  ];
+  const metrics = [
+    { key: "totalCallCount", label: "全通話" },
+    { key: "totalAppoCount", label: "全通話アポ", rate: "totalAppoRate" },
+    { key: "newCallCount", label: "新規" },
+    { key: "newAppoCount", label: "新規アポ", rate: "newAppoRate" },
+    { key: "renegoCallCount", label: "再交渉" },
+    { key: "renegoAppoCount", label: "再交渉アポ", rate: "renegoAppoRate" },
+    { key: "lostIntroCount", label: "導入負け件数", rate: "lostIntroRate" },
+    { key: "lostHearingCount", label: "ヒアリング負け件数", rate: "lostHearingRate" },
+    { key: "lostProposalCount", label: "提案負け件数", rate: "lostProposalRate" },
+    { key: "invalidCount", label: "非有効", rate: "invalidRate" }
+  ];
+  const tbody = document.getElementById("performance-body");
+  tbody.innerHTML = "";
+
+  metrics.forEach(metric => {
+    const tr = document.createElement("tr");
+    const labelTd = document.createElement("td");
+    labelTd.textContent = metric.label;
+    tr.appendChild(labelTd);
+
+    periods.forEach(period => {
+      const record = data[period.key] || {};
+      const count = record[metric.key] ?? 0;
+      const rate = metric.rate ? formatRate(record[metric.rate] ?? 0) : "-";
+      tr.appendChild(Object.assign(document.createElement("td"), { textContent: count }));
+      tr.appendChild(Object.assign(document.createElement("td"), { textContent: rate }));
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ---------------------------------
+/** フォームデータ構築 */
+function buildFormData(form) {
+  const recontactDate = form.recontactDate.value;
+  const recontactTime = form.recontactTime.value;
+  return {
+    accountId: parseInt(accountId),
+    callTime: normalizeDateTimeInput(form.callTime.value),
+    telephoneNumber: form.telephoneNumber.value,
+    status: parseInt(form.status.value),
+    result: parseInt(form.result.value),
+    appoTime: normalizeDateTimeInput(form.appoTime.value),
+    resultDetail: form.resultDetail.value ? parseInt(form.resultDetail.value) : null,
+    recontactDate: (recontactDate && recontactTime)
+      ? normalizeDateTimeInput(`${recontactDate}T${recontactTime}`)
+      : null,
+    handler: form.handler.value || null,
+    isBenefits: form.isBenefits.value === "" ? null : form.isBenefits.value === "true",
+    benefitsTargetsCheck: form.benefitsTargetsCheck.value === "" ? null : form.benefitsTargetsCheck.value === "true"
+  };
+}
+
+/* バリデーション */
+function validateFormData(data) {
+  if (!data.callTime) return "通話日時は必須です";
+  if (!/^\d{10,11}$/.test(data.telephoneNumber)) return "電話番号は10〜11桁の数字で入力してください";
+  if (!data.status) return "ステータスは必須です";
+  if (!data.result) return "通話結果は必須です";
+  return null;
+}
+
+/* 更新用 PATCH リクエスト */
+async function updateRecord(recordId, field, value) {
+  try {
+    const body = { [field]: value };
+    const res = await fetch(`/api/salesRecords/${recordId}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    console.log(`Updated ${field} for ${recordId}`);
+    fetchAndRenderAnalysis();
+  } catch (err) {
+    console.error("更新エラー:", err);
+    alert("更新に失敗しました");
+  }
+}
+
+/** フォームリセット（新規モードに戻す） */
+function resetForm() {
+  selectedRecordId = null;
+  const form = document.forms["recordInputForm"];
+  form.reset();
+  document.getElementById("submitButton").textContent = "新規作成";
+  document.getElementById("cancelEditButton").style.display = "none";
+}
+
+// 共通ユーティリティ
+function formatRate(rate) { return (rate * 100).toFixed(1) + "%"; }
+function formatDateTime(str) {
+  return str ? new Date(str).toLocaleString("ja-JP", { year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit" }) : "-";
+}
+function normalizeDateTimeInput(str) { return str ? (str.length===19 ? str : str+":00") : null; }
+function formatNullable(v, f=v=>v, fb="―") { return v!=null ? f(v) : fb; }
+</script>
+
+
+	</body>
+</html>

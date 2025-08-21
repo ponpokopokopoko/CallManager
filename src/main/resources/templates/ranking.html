@@ -1,0 +1,371 @@
+<!DOCTYPE html><!--データ入力-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ランキング</title>
+    <style>
+		/* ===== Reset & tokens ===== */
+	*,
+	*::before,
+	*::after { box-sizing: border-box; }
+	
+	:root{
+	  --bg:#f6f7fb;
+	  --panel:#ffffff;
+	  --ink:#1f2937;
+	  --sub:#6b7280;
+	  --line:#e5e7eb;
+	  --primary:#2563eb;
+	  --primary-ink:#fff;
+	  --danger:#ef4444;
+	  --radius:16px;
+	  --shadow:0 10px 24px rgba(0,0,0,.08);
+	  --ring:0 0 0 4px rgba(37,99,235,.15);
+	}
+	
+	/* ===== Page ===== */
+	html,body{height:100%;}
+	body{
+	  margin:0;
+	  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+	  color:var(--ink);
+	  background:
+	    radial-gradient(1200px 800px at 20% -10%,#eef2ff,transparent),
+	    radial-gradient(1000px 700px at 120% 0%,#fef3c7,transparent),
+	    var(--bg);
+	}
+	
+	/* Header */
+	header{
+	  max-width:1000px;
+	  margin:32px auto 12px;
+	  padding:0 20px;
+	  display:flex;
+	  align-items:center;
+	  gap:12px;
+	}
+	header h1{ margin:0; font-size:20px; letter-spacing:.02em; }
+	header p{ margin:0; color:var(--sub); font-size:12px; }
+	
+	/* ===== Main ===== */
+	main{
+	  max-width:1000px;
+	  margin:0 auto;
+	  padding:24px 20px 60px;
+	  display:grid;
+	  gap:20px;
+	}
+	
+	/* 挨拶 */
+	main > p{
+	  margin:0;
+	  color:var(--sub);
+	  font-weight:600;
+	}
+	
+	/* 戻るボタン（ピル） */
+	form[action="/general-menu"]{ margin-left:auto; }
+	form[action="/general-menu"] button{
+	  border:1px solid var(--line);
+	  background:#fff;
+	  padding:8px 14px;
+	  border-radius:999px;
+	  cursor:pointer;
+	  transition:background .2s, box-shadow .2s;
+	}
+	form[action="/general-menu"] button:hover{
+	  background:#f9fafb;
+	  box-shadow:0 2px 8px rgba(0,0,0,.06);
+	}
+	
+	/* ===== Performance（上の成績テーブル） ===== */
+	section > table{
+	  width:100%;
+	  border-collapse:collapse;
+	  background:var(--panel);
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  box-shadow:var(--shadow);
+	  overflow:hidden;
+	}
+	section > table thead th{
+	  background:#f8fafc;
+	  color:#475569;
+	  font-weight:700;
+	  font-size:13px;
+	  padding:12px 14px;
+	  border-bottom:1px solid var(--line);
+	  text-align:left;
+	  white-space:nowrap;
+	}
+	section > table tbody td{
+	  border-top:1px solid var(--line);
+	  padding:12px 14px;
+	}
+	
+	/* ===== 入力フォーム（カード化） ===== */
+	#recordInputForm{
+	  background:var(--panel);
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  box-shadow:var(--shadow);
+	  padding:22px;
+	}
+	#recordInputForm > table{
+	  width:100%;
+	  border-collapse:collapse;
+	}
+	#recordInputForm thead th{
+	  background:#f8fafc;
+	  color:#475569;
+	  font-weight:700;
+	  font-size:13px;
+	  padding:10px 12px;
+	  border-bottom:1px solid var(--line);
+	  text-align:left;
+	}
+	#recordInputForm tbody td{
+	  border-top:1px solid var(--line);
+	  padding:10px 12px;
+	  vertical-align:middle;
+	}
+	
+	/* 入力要素（フォーム内） */
+	#recordInputForm input[type="datetime-local"],
+	#recordInputForm input[type="tel"],
+	#recordInputForm input[type="date"],
+	#recordInputForm input[type="time"],
+	#recordInputForm select{
+	  width:100%;
+	  padding:10px 12px;
+	  font-size:15px;
+	  border:1px solid var(--line);
+	  border-radius:12px;
+	  background:#fff;
+	  outline:none;
+	  transition:border-color .2s, box-shadow .2s, transform .02s;
+	}
+	#recordInputForm select{
+	  appearance:none;
+	  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2399a3b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+	  background-repeat:no-repeat;
+	  background-position:right 10px center;
+	  background-size:20px 20px;
+	  padding-right:38px;
+	}
+	#recordInputForm input:focus,
+	#recordInputForm select:focus{
+	  border-color:var(--primary);
+	  box-shadow:var(--ring);
+	}
+	#recordInputForm input:active,
+	#recordInputForm select:active{ transform: translateY(.5px); }
+	
+	/* 送信/キャンセルボタン */
+	#submitButton,
+	#cancelEditButton{
+	  display:inline-block;
+	  min-width:140px;
+	  margin-top:14px;
+	  padding:12px 16px;
+	  border:0;
+	  border-radius:12px;
+	  font-weight:700;
+	  letter-spacing:.02em;
+	  cursor:pointer;
+	  transition:transform .08s, filter .2s, box-shadow .2s;
+	}
+	#submitButton{
+	  background:linear-gradient(180deg,#3b82f6,#2563eb);
+	  color:var(--primary-ink);
+	  box-shadow:0 6px 16px rgba(37,99,235,.25);
+	}
+	#submitButton:hover{ filter:brightness(1.03); }
+	#submitButton:active{ transform:translateY(1px); box-shadow:0 4px 10px rgba(37,99,235,.25); }
+	
+	#cancelEditButton{
+	  background:#eef2ff;
+	  color:#1e3a8a;
+	  margin-left:8px;
+	  border:1px solid #e0e7ff;
+	}
+	#cancelEditButton:hover{ filter:brightness(1.02); }
+	#cancelEditButton:active{ transform:translateY(1px); }
+	
+	/* ===== 通話記録一覧（下のテーブル） ===== */
+	main > h2{
+	  margin:8px 0 0;
+	  color:var(--sub);
+	  font-size:14px;
+	}
+	main > table{
+	  width:100%;
+	  border-collapse:collapse;
+	  background:var(--panel);
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  box-shadow:var(--shadow);
+	  overflow:hidden;
+	}
+	main > table thead th{
+	  background:#f8fafc;
+	  color:#475569;
+	  font-weight:700;
+	  font-size:13px;
+	  padding:12px 14px;
+	  border-bottom:1px solid var(--line);
+	  text-align:left;
+	  white-space:nowrap;
+	}
+	main > table tbody td{
+	  border-top:1px solid var(--line);
+	  padding:12px 14px;
+	  vertical-align:middle;
+	}
+	main > table tbody tr:nth-child(odd){ background:#fcfcff; }
+	
+	/* インライン編集セルの見た目 */
+	td.editable{ cursor:text; }
+	td.editable:hover{ background:#f4f7ff; }
+	
+	/* 削除ボタン */
+	button.delete-btn{
+	  padding:10px 14px;
+	  border:0;
+	  border-radius:12px;
+	  background: linear-gradient(180deg,#f87171,#ef4444);
+	  color:#fff;
+	  font-weight:700;
+	  cursor:pointer;
+	  box-shadow:0 6px 16px rgba(239,68,68,.25);
+	  transition:transform .08s, filter .2s, box-shadow .2s;
+	}
+	button.delete-btn:hover{ filter:brightness(1.03); }
+	button.delete-btn:active{ transform:translateY(1px); }
+	
+	
+	</style>
+  </head>
+  <body>
+    <header>
+      <h1>ランキング</h1>
+      <p>電話管理アプリ</p>
+    </header>
+
+    <main>
+      <p th:if="${#authentication != null}" th:text="|こんにちは、${#authentication?.name}さん！|">こんにちは、ゲストさん！</p>
+
+      <form action="/general-menu" method="get">
+        <button type="submit">戻る</button>
+      </form>
+
+      <label for="periodSelect">期間:</label>
+      <select id="periodSelect">
+        <option value="today">今日</option>
+        <option value="thisWeek">今週</option>
+        <option value="thisMonth">今月</option>
+      </select>
+
+      <label for="metricSelect">指標:</label>
+      <select id="metricSelect">
+        <option value="newCallCount">新規通話件数</option>
+        <option value="newAppoCount">新規アポ件数</option>
+        <option value="newAppoRate">新規アポ率</option>
+        <option value="renegoCallCount">再交渉通話件数</option>
+        <option value="renegoAppoCount">再交渉アポ件数</option>
+        <option value="renegoAppoRate">再交渉アポ率</option>
+        <option value="totalCallCount">全通話件数</option>
+        <option value="totalAppoCount">全アポ件数</option>
+        <option value="totalAppoRate">全アポ率</option>
+      </select>
+
+      <button type="button" onclick="fetchAndDisplayRanking()">表示</button>
+
+      <table id="rankingTable" border="1">
+        <thead>
+          <tr>
+            <th>順位</th>
+            <th>ユーザーID</th>
+            <th>新規通話件数</th>
+		      <th>新規アポ件数</th>
+		      <th>新規アポ率</th>
+		      <th>再交渉通話件数</th>
+		      <th>再交渉アポ件数</th>
+		      <th>再交渉アポ率</th>
+		      <th>全通話件数</th>
+		      <th>全アポ件数</th>
+		      <th>全アポ率</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="3">データを取得してください</td></tr>
+        </tbody>
+      </table>
+    </main>
+
+    <script>
+      async function fetchAndDisplayRanking() {
+		  const metric = document.getElementById("metricSelect").value;
+		  try {
+		    const res = await fetch(`/api/ranking?metric=${metric}`, {
+		      credentials: "include",
+		      headers: { "Accept": "application/json" }
+		    });
+		    if (!res.ok) throw new Error("ランキング取得失敗");
+		
+		    const rankings = await res.json();
+		    const period = document.getElementById("periodSelect").value;
+		    const idxMap = { today:0, thisWeek:1, thisMonth:2 };
+		    const list = rankings[idxMap[period]] || [];
+		
+		    const tbody = document.querySelector("#rankingTable tbody");
+		    tbody.innerHTML = "";
+		
+		    if (list.length === 0) {
+		      tbody.innerHTML = `<tr><td colspan="11">データがありません</td></tr>`;
+		      return;
+		    }
+		
+		    // 表示したい指標キーのリスト（順序をヘッダーに合わす）
+		    const keys = [
+		      "newCallCount", "newAppoCount", "newAppoRate",
+		      "renegoCallCount", "renegoAppoCount", "renegoAppoRate",
+		      "totalCallCount","totalAppoCount","totalAppoRate"
+		    ];
+		
+		    list.forEach((user, i) => {
+		      const tr = document.createElement("tr");
+		      // 順位と名前セル
+		      let html = `<td>${i+1}</td><td>${user.userName}</td>`;
+		      // 全指標セル
+		      keys.forEach(k => {
+		        let val = user[k];
+		        // 数値なら小数点以下1桁、率なら%付きに整形
+		        if (k.endsWith("Rate")) {
+		          val = (val*100).toFixed(1) + "%";
+		        } else {
+		          val = val != null ? val : "-";
+		        }
+		        // 選択中の指標は太字に
+		        if (k === metric) {
+		          html += `<td><b>${val}</b></td>`;
+		        } else {
+		          html += `<td>${val}</td>`;
+		        }
+		      });
+		      tr.innerHTML = html;
+		      tbody.appendChild(tr);
+		    });
+		
+		  } catch (err) {
+		    alert(err.message);
+		  }
+		}
+
+      // 初期表示時にランキング取得
+      window.addEventListener("DOMContentLoaded", fetchAndDisplayRanking);
+    </script>
+  </body>
+</html>
