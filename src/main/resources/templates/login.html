@@ -1,0 +1,267 @@
+<!DOCTYPE html><!--２，ログイン（ユーザー名、パスワード入力）-->
+<html lang="ja">
+<head>
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<title>ユーザー選択</title>
+	<style>
+		/* ===== Reset===== */
+		*,
+		*::before,
+		*::after { box-sizing: border-box; }
+		
+		:root{
+		  --bg: #f6f7fb;
+		  --panel: #ffffff;
+		  --ink: #1f2937;
+		  --sub: #6b7280;
+		  --line: #e5e7eb;
+		  --primary: #2563eb;
+		  --primary-ink: #fff;
+		  --radius: 16px;
+		  --shadow: 0 10px 24px rgba(0,0,0,.08);
+		  --ring: 0 0 0 4px rgba(37, 99, 235, .15);
+		}
+		
+		/* ===== Page ===== */
+		html, body { height: 100%; }
+		body{
+		  margin: 0;
+		  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+		  color: var(--ink);
+		  background: radial-gradient(1200px 800px at 20% -10%, #eef2ff, transparent),
+		              radial-gradient(1000px 700px at 120% 0%, #fef3c7, transparent),
+		              var(--bg);
+		}
+		
+		/* Header */
+		header{
+		  max-width: 880px;
+		  margin: 32px auto 12px;
+		  padding: 0 20px;
+		  display: flex;
+		  align-items: baseline;
+		  gap: 12px;
+		}
+		header h1{
+		  margin: 0;
+		  font-size: 20px;
+		  letter-spacing: .02em;
+		}
+		header p{
+		  margin: 0;
+		  color: var(--sub);
+		  font-size: 12px;
+		}
+		
+		/* Layout */
+		main{
+		  min-height: calc(100dvh - 120px);
+		  display: grid;
+		  place-items: start center;
+		  padding: 24px;
+		}
+		main > h2{
+		  grid-column: 1;
+		  width: 100%;
+		  max-width: 520px;
+		  margin: 0 0 12px;
+		  color: var(--sub);
+		  font-weight: 600;
+		  font-size: 14px;
+		}
+		
+		/* ===== Card / form ===== */
+		section#login form{
+		  width: 100%;
+		  max-width: 520px;
+		  background: var(--panel);
+		  border: 1px solid var(--line);
+		  border-radius: var(--radius);
+		  box-shadow: var(--shadow);
+		  padding: 22px;
+		}
+		
+		/* Fields */
+		section#login label{
+		  display: block;
+		  margin-top: 14px;
+		  font-size: 13px;
+		  color: var(--sub);
+		}
+		
+		section#login input[type="password"],
+		section#login select{
+		  width: 100%;
+		  margin-top: 6px;
+		  padding: 12px 14px;
+		  font-size: 16px;
+		  border: 1px solid var(--line);
+		  border-radius: 12px;
+		  background: #fff;
+		  outline: none;
+		  transition: border-color .2s, box-shadow .2s, transform .02s;
+		}
+		
+		
+		section#login select:invalid { color: #9ca3af; }
+		
+		/* Custom select arrow */
+		section#login select{
+		  appearance: none;
+		  background-image:
+		    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2399a3b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+		  background-repeat: no-repeat;
+		  background-position: right 12px center;
+		  background-size: 20px 20px;
+		  padding-right: 40px;
+		}
+		
+		section#login input:focus,
+		section#login select:focus{
+		  border-color: var(--primary);
+		  box-shadow: var(--ring);
+		}
+		section#login input:active,
+		section#login select:active{ transform: translateY(0.5px); }
+		
+		/* Button（ID被りを避けるため typeで指定） */
+		section#login button[type="submit"]{
+		  display: block;
+		  width: 100%;
+		  margin-top: 20px;
+		  padding: 12px 16px;
+		  border: 0;
+		  border-radius: 12px;
+		  background: linear-gradient(180deg, #3b82f6, #2563eb);
+		  color: var(--primary-ink);
+		  font-weight: 700;
+		  letter-spacing: .02em;
+		  cursor: pointer;
+		  box-shadow: 0 6px 16px rgba(37,99,235,.25);
+		  transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+		}
+		section#login button[type="submit"]:hover{ filter: brightness(1.03); }
+		section#login button[type="submit"]:active{
+		  transform: translateY(1px);
+		  box-shadow: 0 4px 10px rgba(37,99,235,.25);
+		}
+		
+		/* Error message */
+		#error-message{
+		  max-width: 520px;
+		  margin: 10px auto 0;
+		  padding: 10px 12px;
+		  border: 1px solid #fecaca;
+		  background: #fff1f2;
+		  color: #b91c1c;
+		  border-radius: 10px;
+		  font-size: 14px;
+		  display: none; /* JSで出すときに block に */
+		}
+		
+	</style>
+	
+</head>
+<body>
+	<header>
+		<h1>ユーザー選択</h1>
+		<p>電話業務効率化アプリ</p>
+	</header>
+	
+	
+	<main>
+		<h2>ユーザーを選択してログインしてください</h2>
+			
+		<section id="login">
+			<form action="/login" method="post">
+				<div>
+					<label for="username">ユーザー名</label><!--forとidで紐づけ-->
+					<select id="username" name="username">
+						<option value="" disabled selected>選択してください</option>
+						<!--disabled :不活性→フォーム送信もされない→readonlyは送信される　selected：初期選択値-->
+					
+					</select>
+				</div>
+				
+				<div><!-- name=値で渡す --><!--value→初期値もしくは送信時の値-->
+					<label for="password">パスワード</label>
+					<input type="password" id="password" name="password" >
+				</div>
+				
+				<button id="login" type="submit">ログイン</button>
+				
+			
+			</form>
+			
+			<div id="error-message"></div>
+			
+		</section>
+		
+
+	
+	</main>
+	
+	<script>
+		
+		//引数なしの場合のアロー関数
+		document.addEventListener('DOMContentLoaded', async () => {
+			
+			//１，画面が組まれたらユーザーの一覧収集
+		    async function loadUsersIntoSelect() {
+		        const usernameSelect = document.getElementById('username');
+		        usernameSelect.innerHTML = '<option value="" disabled selected>選択してください</option>'; // 初期オプションを再設定
+		
+		        try {
+					console.log('kokode');
+		            // サーバーからユーザー一覧を取得（GET /users を想定）
+		            const response = await fetch('/api/users');//一覧取得getUsers()→成功
+		
+		
+		            if (!response.ok) { // レスポンスのステータスコードが200番台（成功）以外の場合
+		            	console.log('kokode!');
+		                throw new Error(`HTTP error! status: ${response.status}`);//.statusでステータスコード（数値）を表示
+		            }//throwしたらcatchに飛びます。Errorオブジェクトでコメント引き継げる
+		
+		            const users = await response.json(); // JSON形式で生のデータをjsオブジェクトにパース
+					
+		            // 取得したユーザーデータをもとに、selectボックスにoption要素を追加
+		            users.forEach(user => {//引数が１つ（userのみ）のアロー関数をusersのオブジェクトの数だけ繰り返す
+		                console.log('kokode&');
+		                const option = document.createElement('option');//<option>生成
+		                option.value = user.userName; // optionのvalue属性はユーザー名
+		                option.textContent = user.userName; // optionに表示されるテキストもユーザー名
+		                usernameSelect.appendChild(option);//id = username の要素の最後尾に追加
+		            });
+		
+		        } catch (error) {
+					console.log('kokode2');
+		            console.error('ユーザーリストの取得中にエラーが発生しました:', error);
+		            // ユーザーにエラーを通知するUIを追加することも検討
+		            const errorOption = document.createElement('option');
+		            errorOption.value = "";
+		            errorOption.disabled = true;
+		            errorOption.textContent = "ユーザーの読み込みに失敗しました";
+		            usernameSelect.appendChild(errorOption);
+		        }
+		    }
+		
+		    // ページ読み込み時にユーザーリストをロード
+		    loadUsersIntoSelect();
+		    
+		    //２，ログイン→ボタンでやっちゃう（エラー出しだけ）
+		    const params = new URLSearchParams(window.location.search);//エラー出しのためのクエリパラメータを取得するだけ
+		    if (params.has('error')) {
+		       const errorMessage = document.getElementById('error-message');
+		       errorMessage.textContent = 'ユーザー名またはパスワードが正しくありません。';
+		    }
+		    
+		 });
+	
+		
+	</script>
+
+</body>
+</html>
