@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Insert title here</title>
+	
+	<style>
+			/* ===== Reset & tokens ===== */
+	*,
+	*::before,
+	*::after { box-sizing: border-box; }
+	
+	:root{
+	  --bg:#f6f7fb;
+	  --panel:#ffffff;
+	  --ink:#1f2937;
+	  --sub:#6b7280;
+	  --line:#e5e7eb;
+	  --primary:#2563eb;
+	  --primary-ink:#fff;
+	  --radius:16px;
+	  --shadow:0 10px 24px rgba(0,0,0,.08);
+	  --ring:0 0 0 4px rgba(37,99,235,.15);
+	}
+	
+	/* ===== Page ===== */
+	html,body{height:100%;}
+	body{
+	  margin:0;
+	  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+	  color:var(--ink);
+	  background:
+	    radial-gradient(1200px 800px at 20% -10%,#eef2ff,transparent),
+	    radial-gradient(1000px 700px at 120% 0%,#fef3c7,transparent),
+	    var(--bg);
+	}
+	
+	/* Header */
+	header{
+	  max-width:880px;
+	  margin:32px auto 12px;
+	  padding:0 20px;
+	  display:flex;
+	  align-items:center;
+	  gap:12px;
+	}
+	header h1{margin:0;font-size:20px;letter-spacing:.02em;}
+	header p{margin:0;color:var(--sub);font-size:12px;}
+	
+	/* ===== Main layout ===== */
+	main{
+	  max-width:880px;
+	  margin:0 auto;
+	  padding:24px 20px 60px;
+	  display:grid;
+	  gap:20px;
+	}
+	
+	/* 戻るボタン */
+	form[action="/general-menu"]{ margin-left:auto; }
+	form[action="/general-menu"] button{
+	  border:1px solid var(--line);
+	  background:#fff;
+	  padding:8px 14px;
+	  border-radius:999px;
+	  cursor:pointer;
+	  transition:background .2s, box-shadow .2s;
+	}
+	form[action="/general-menu"] button:hover{
+	  background:#f9fafb;
+	  box-shadow:0 2px 8px rgba(0,0,0,.06);
+	}
+	
+	
+	
+	
+	/* 挨拶*/
+	main > p{
+	  margin:0;
+	  color:var(--sub);
+	  font-weight:600;
+	}
+	
+	/* ===== Card (fieldset) ===== */
+	#attendanceForm fieldset{
+	  margin:0;
+	  border:1px solid var(--line);
+	  border-radius:var(--radius);
+	  background:var(--panel);
+	  box-shadow:var(--shadow);
+	  padding:22px;
+	}
+	#attendanceForm legend{
+	  padding:0 8px;
+	  font-weight:700;
+	  color:var(--sub);
+	}
+	
+	/* ===== Form elements ===== */
+	label{
+	  display:block;
+	  margin-top:14px;
+	  font-size:13px;
+	  color:var(--sub);
+	}
+	
+	/* 横並びにしたい項目は内側で調整 */
+	#attendanceForm .inline{
+	  display:flex;
+	  align-items:center;
+	  gap:12px;
+	}
+	
+	input[type="text"],
+	input[type="date"],
+	input[type="time"],
+	textarea{
+	  width:100%;
+	  margin-top:6px;
+	  padding:12px 14px;
+	  font-size:16px;
+	  border:1px solid var(--line);
+	  border-radius:12px;
+	  background:#fff;
+	  outline:none;
+	  transition:border-color .2s, box-shadow .2s, transform .02s;
+	}
+	textarea{ resize:vertical; min-height:120px; }
+	
+	input:focus,
+	textarea:focus{
+	  border-color:var(--primary);
+	  box-shadow:var(--ring);
+	}
+	input:active,
+	textarea:active{ transform: translateY(.5px); }
+	
+	/* ラジオ＆チェックボックス */
+	input[type="radio"],
+	input[type="checkbox"]{
+	  width:18px; height:18px;
+	  vertical-align:middle;
+	  accent-color: var(--primary);
+	  margin-right:6px;
+	}
+	
+	/* ボタン */
+	#attendanceBtn{
+	  display:block;
+	  width:100%;
+	  margin-top:18px;
+	  padding:12px 16px;
+	  border:0;
+	  border-radius:12px;
+	  background:linear-gradient(180deg,#3b82f6,#2563eb);
+	  color:var(--primary-ink);
+	  font-weight:700;
+	  letter-spacing:.02em;
+	  cursor:pointer;
+	  box-shadow:0 6px 16px rgba(37,99,235,.25);
+	  transition:transform .08s, filter .2s, box-shadow .2s;
+	}
+	#attendanceBtn:hover{ filter:brightness(1.03); }
+	#attendanceBtn:active{ transform:translateY(1px); box-shadow:0 4px 10px rgba(37,99,235,.25); }
+	
+	#attendanceForm .inline {
+	  display: flex;
+	  align-items: center;
+	  gap: 16px; /* 出勤と退勤の間隔 */
+	}
+	
+	#attendanceForm .inline label {
+	  margin: 0; /* ラベルの余白をリセット */
+	}
+	
+	</style>
+</head>
+<body>
+	<header>
+		<h1>メニュー</h1>
+		<p>業務効率化アプリ</p>
+	</header>
+	
+	<main>
+		<form action="/general-menu" method="get">
+			<button type="submit">戻る</button>
+		</form>
+		
+		
+		<p th:if="${#authentication != null}" th:text="|こんにちは、${#authentication?.name}さん！|">こんにちは、ゲストさん！</p>
+				
+		
+		<form id="attendanceForm" >
+		  <fieldset>
+		    <legend>出退勤入力フォーム</legend>
+		
+			<div class="inline">
+			  <input type="radio" id="recordTypeStart" name="recordType" value="START">
+			  <label for="recordTypeStart">出勤</label>
+			
+			  <input type="radio" id="recordTypeEnd" name="recordType" value="END">
+			  <label for="recordTypeEnd">退勤</label>
+			</div>
+			
+		    <br>
+		
+		    <label for="username">名前</label>
+		    <input type="text" id="username" th:value="${#authentication?.name}" readonly>
+			<input type="hidden" id="userId" th:value="${user.userId}">
+		    <br>
+		
+		    <label for="recordedDate">日付</label>
+		    <input type="date" id="recordedDate" required>
+		
+		    <label for="recordedTime">時間</label>
+		    <input type="time" id="recordedTime" required>
+		
+		    <br>
+		
+		    <label for="agreementText">同意事項</label>
+		    <textarea id="agreementText" readonly rows="17">
+				1. 情報セキュリティに関する同意
+機密保持: 業務上知り得た顧客情報、会社の営業秘密、およびその他の機密情報を、在職中および退職後も第三者に開示、漏洩、または不正利用しないことに同意します。
+個人情報保護: 顧客の個人情報（氏名、住所、電話番号など）を、業務目的以外で利用したり、許可なく記録・持ち出したりしないことに同意します。
+アクセス管理: 業務に使用するシステムへのアクセスID、パスワードを厳重に管理し、他者に共有しないことに同意します。
+				
+				2. 業務遂行に関する同意
+勤務態度: 定められた勤務時間に遅刻・早退・欠勤をしないよう努め、やむを得ず変更がある場合は速やかに報告します。また、業務中は常にプロフェッショナルな態度で臨みます。
+電話応対: 会社の定めるスクリプト、マニュアル、および品質基準に従い、丁寧かつ正確な応対を行います。
+業務報告: 業務日報やその他の報告を、定められた形式と期限内に正確に提出することに同意します。
+PC・備品管理: 貸与されたPCやヘッドセット、その他の備品を丁寧に扱い、破損や紛失が発生した場合は速やかに報告します。
+				
+				3. 職場環境に関する同意
+職場の秩序: チームメンバーや他の従業員と協力し、円滑なコミュニケーションを心がけます。ハラスメントやいじめ、不適切な言動を行わないことに同意します。
+清潔保持: 職場の整理整頓に協力し、衛生的な環境を保つことに同意します。
+私物管理: 貴重品を含む私物の管理は自己責任で行い、紛失や盗難について会社は責任を負わないことに同意します。
+				
+				4. 違反時の対応に関する同意
+上記規約に違反した場合、就業規則に基づき懲戒処分を含む厳正な措置が取られる可能性があることに同意します。
+		    </textarea>
+		
+		    <br>
+		
+		    <input type="checkbox" id="agreement" required>
+		    <label for="agreement">以上の就業規約に同意します</label>
+		
+		    <br>
+		
+		    <button id="attendanceBtn">送信</button>
+		  </fieldset>
+		</form>
+	
+	</main>
+	
+	<script>
+		  document.addEventListener('DOMContentLoaded', () => {
+			  
+		    document.getElementById('attendanceBtn').addEventListener('click', async () => {
+				
+		      const recordType = document.querySelector('input[name="recordType"]:checked')?.value;
+		      const userId = document.getElementById("userId").value;
+		      const recordedDate = document.getElementById("recordedDate").value;
+		      const recordedTime = document.getElementById("recordedTime").value;
+		      const recordedAt = `${recordedDate}T${recordedTime}`;
+		      const agreement = document.getElementById("agreement").checked;
+		
+		      if (!recordType) {
+		        alert("出勤か退勤かを選択してください");
+		        return;
+		      }
+		
+		      if (!agreement) {
+		        alert("同意が必要です！");
+		        return;
+		      }
+		      
+		      // 確認メッセージを作成
+			    const summary = [
+			      `名前: ${document.getElementById("username").value}`,
+			      `区分: ${recordType === 'START' ? '出勤' : '退勤'}`,
+			      `日時: ${recordedDate} ${recordedTime}`,
+			      `利用者ID: ${userId}`,
+			      `同意: ${agreement ? '同意する' : '未同意'}`
+			    ].join('\n');
+			
+			    // 確認ダイアログ
+			    if (!confirm(`以下の内容で送信してよろしいですか？\n\n${summary}`)) {
+			      return; // キャンセルされたら何もしない
+			    }
+		
+		      try {
+		        const response = await fetch('/api/attendance', {
+		          method: 'POST',
+		          headers: {
+		            'Content-Type': 'application/json'
+		          },
+		          body: JSON.stringify({
+		            userId: userId,
+		            recordedAt: recordedAt,
+		            recordType: recordType,
+		            agreement: agreement
+		          })
+		        });
+		
+		        if (!response.ok) {
+		          const error = await response.text();
+		          alert(`エラーが発生しました: ${error}`);
+		          return;
+		        }
+		
+		        alert("送信しました！");
+		        window.location.href = "/general-menu"; // 送信後にリダイレクト（必要なら）
+		
+		      } catch (error) {
+		        alert('通信エラーが発生しました。');
+		      }
+		    });
+		  });
+	</script>
+	
+
+
+
+</body>
+</html>

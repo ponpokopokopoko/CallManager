@@ -1,0 +1,184 @@
+<!DOCTYPE html><!--一般ユーザーのメニュー（ボタン三つ）-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メニュー</title>
+  <style>
+	/* ===== Reset & tokens ===== */
+	*,*::before,*::after{box-sizing:border-box}
+	:root{
+	  --bg:#f6f7fb; --panel:#fff; --ink:#1f2937; --sub:#6b7280; --line:#e5e7eb;
+	  --primary:#2563eb; --primary-ink:#fff; --radius:16px;
+	  --shadow:0 10px 24px rgba(0,0,0,.08); --ring:0 0 0 4px rgba(37,99,235,.15);
+	}
+	html,body{height:100%}
+	body{
+	  margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+	  color:var(--ink);
+	  background:radial-gradient(1200px 800px at 20% -10%,#eef2ff,transparent),
+	             radial-gradient(1000px 700px at 120% 0%,#fef3c7,transparent),
+	             var(--bg);
+	}
+	
+	
+	/*ログアウト*/
+	form[action="/logout"]{
+	  margin-left:auto;
+	}
+	form[action="/logout"] button{
+	  border:1px solid var(--line);
+	  background:#fff;
+	  padding:8px 14px;
+	  border-radius:999px;
+	  cursor:pointer;
+	  transition:background .2s, box-shadow .2s;
+	}
+	form[action="/logout"] button:hover{
+	  background:#f9fafb;
+	  box-shadow:0 2px 8px rgba(0,0,0,.06);
+	}
+	
+	/* Header */
+	header{max-width:1040px;margin:32px auto 12px;padding:0 20px;display:flex;gap:12px;align-items:center}
+	header h1{margin:0;font-size:20px;letter-spacing:.02em}
+	header p{margin:0;color:var(--sub);font-size:12px}
+	
+	/* Main layout */
+	main{max-width:1040px;margin:0 auto;padding:24px 20px 60px;display:grid;gap:20px}
+	
+	/* Buttons */
+	.btn{
+	  display:inline-flex; align-items:center; justify-content:center;
+	  padding:12px 16px; border:0; border-radius:12px; font-weight:700; letter-spacing:.02em;
+	  cursor:pointer; transition:transform .08s, filter .2s, box-shadow .2s; text-decoration:none;
+	}
+	.btn--primary{
+	  background:linear-gradient(180deg,#3b82f6,#2563eb); color:var(--primary-ink);
+	  box-shadow:0 6px 16px rgba(37,99,235,.25);
+	}
+	.btn--primary:hover{filter:brightness(1.03)}
+	.btn--primary:active{transform:translateY(1px);box-shadow:0 4px 10px rgba(37,99,235,.25)}
+	.btn--full{width:100%}
+	.btn--sm{padding:8px 12px;border-radius:10px}
+	
+	/* Card */
+	.card{
+	  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+	  box-shadow:var(--shadow); padding:22px;
+	}
+	.card-title{
+	  padding:0 8px;
+	  font-weight:700;
+	  color:var(--sub);
+	}
+	/* Grid for three actions */
+	.actions{display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+	
+	/* Form controls */
+	label{display:block;margin:12px 0 6px;font-size:13px;color:var(--sub)}
+	select{
+	  width:100%; appearance:none; padding:12px 40px 12px 12px; font-size:16px;
+	  border:1px solid var(--line); border-radius:12px; background:#fff;
+	  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2399a3b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+	  background-repeat:no-repeat; background-position:right 12px center; background-size:20px 20px;
+	  outline:none; transition:border-color .2s, box-shadow .2s;
+	}
+	select:focus{border-color:var(--primary); box-shadow:var(--ring)}
+	/* Greeting */
+	main > p{margin:0;color:var(--sub);font-weight:600}
+	
+
+  </style>
+</head>
+<body>
+<header>
+  <h1>メニュー</h1>
+  <p>業務効率化アプリ</p>
+
+
+
+  <!-- 右側にログアウト -->
+    <form action="/logout" method="post">
+	  <button type="submit">ログアウト</button>
+	</form>
+</header>
+
+<main>
+  <p th:if="${#authentication?.name != null}"
+     th:text="|こんにちは、${#authentication.name}さん！|">こんにちは、ゲストさん！</p>
+
+  <section class="actions">
+    <!-- 出退勤 -->
+    <form action="/general-menu/attendance" method="get" class="card">
+      <h2 class="card-title">出退勤フォーム</h2>
+      <button type="submit" class="btn btn--primary btn--full">出退勤フォームを開く</button>
+    </form>
+
+    <!-- データ入力（カード内にセレクト＋ボタン） -->
+    <div class="card">
+      <h2 class="card-title">データ入力</h2>
+      <label for="account">アカウント選択</label>
+      <select id="account" name="account">
+        <option value="" disabled selected>選択してください</option>
+      </select>
+      <button id="goInputPage" type="button" class="btn btn--primary btn--full" style="margin-top:14px;">
+        データ入力へ
+      </button>
+    </div>
+
+    <!-- 全体成績 -->
+    <form action="/general-menu/ranking" method="get" class="card">
+      <h2 class="card-title">全体成績</h2>
+      <button type="submit" class="btn btn--primary btn--full">全体成績を見る</button>
+    </form>
+  </section>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    // アカウント一覧を取得してselectに追加
+    async function loadAccountsIntoSelect() {
+      const accountSelect = document.getElementById('account');
+      accountSelect.innerHTML = '<option value="" disabled selected>選択してください</option>';
+
+      try {
+        const response = await fetch('/api/accounts');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const accounts = await response.json();
+        accounts.forEach(account => {
+          const option = document.createElement('option');
+          option.value = account.id; // IDをvalueに
+          option.textContent = account.accountName;
+          accountSelect.appendChild(option);
+        });
+
+      } catch (error) {
+        console.error('アカウントの取得中にエラーが発生しました:', error);
+        const errorOption = document.createElement('option');
+        errorOption.value = "";
+        errorOption.disabled = true;
+        errorOption.textContent = "アカウントの読み込みに失敗しました";
+        accountSelect.appendChild(errorOption);
+      }
+    }
+
+    loadAccountsIntoSelect();
+
+    // データ入力ページへ遷移処理
+    document.getElementById("goInputPage").addEventListener("click", () => {
+      const selected = document.getElementById("account").value;
+      if (!selected) {
+        alert("アカウントを選択してください。");
+        return;
+      }
+      window.location.href = `/general-menu/records?accountId=${selected}`;
+    });
+  });
+</script>
+</body>
+</html>
